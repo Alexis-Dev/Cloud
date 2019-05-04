@@ -1,32 +1,7 @@
-#primary-nav, #primary-nav ul {
- margin: 0;
- padding: 0;
- position: fixed;
- top: 0%;/* ne vaut-il pas mieux appliquer un Top:0 et un padding interne ? */
- left:0;
- right:0;
- background: #ec2c22;
- padding: 1%;
+nav{
+	background-color : #ec2c22;
 }
 
-li{
-	display : inline;
-}
-
-.top {
-	text-decoration : none;
-	padding-left : 2%;
-	padding-right : 2%;
-	margin-left : 7%;
-	font-weight: bold;
-	color: white;
-}
-
-#topDroite {
-	text-decoration : none;
-	padding-left : 2%;
-	padding-right : 2%;
-	margin-left : 7%;
-	font-weight: bold;
-	color: white;
+.nav-link{
+	color : white;
 }
