@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
+    <title>Tiny Pet</title>
+    
+    <link rel="stylesheet" href="/css/index.css">
+    <link rel="stylesheet" href="/css/bandeau.css">
+    
+  </head>
+
+  <body>
+  
+	<script src="https://unpkg.com/mithril/mithril.js"></script>
+	<script>
+	var root = document.body
+
+	
+	var Splash = {
+		    view: function() {
+		        return m("main", [
+			        m("nav",{role : "navigation", id: "primary-nav"}, [
+			        	m("ul", [
+			        		m("li", [
+				        		m("a", {id : "topDroite", href: "/index.html"}, "Acceuil"),
+				        	]),
+				        	m("li", [
+				        		m("a", {class : "top", href: "/newPetition.html"}, "Lancer une pétition"),
+				        	]),
+				        	m("li", [
+				        		m("a", {class : "top", href: "/mesPetitions.html"}, "Mes Pétitions signées"),
+				        	]),
+				        	m("li", [
+				        		m("a", {class : "top", href: "/index2.html"}, "Toutes les pétitions"),
+				        	]),
+				        	m("li", [
+				        		m("a", {class : "top", href: "/index2.html"}, "Top 100"),
+				        	]),
+				        ])
+			        ]),
+			        m("div", {id : "general"},[
+			        	m("button", {id : "bouton"}, [
+			        		m("a", {id : "texteBouton", href: "/index2.html"}, "Lancer une pétition"),
+			        	])
+			        ]),
+			    ])
+		    }
+		}
+
+	m.mount(root, Splash)
+	</script>
+  </body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Tiny Pet</title>
+</head>
+<body>
+
+
+
+	<script src="https://unpkg.com/mithril/mithril.js"></script>
+	<script>	
+
+	var root = document.body
+	var count = 0
+
+	var Test = {
+	    view: function() {
+	        return m("main", [
+	            m("h1", {
+	                class: "title"
+	            }, "My first app"),
+	            m("button", {
+	                onclick: function() {count++}
+	            }, count + " clicks"),
+	            m("br"),
+	            m("a", {
+		            href: "/hello"
+		        }, "The servlet"),
+		        m("br"),
+	            m("a", {
+		            href: "/index.html"
+		        }, "Retour!"),
+	        ])
+	    }
+	}
+
+	m.mount(root, Test)
+
+</script>
+</body>
+</html>
