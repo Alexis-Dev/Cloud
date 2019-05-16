@@ -21,6 +21,16 @@
 	<script>
 	var root = document.body
 
+	var Petition = {
+		    current: {},
+		    save: function() {
+		    	console.log("saving...",Petition.current)
+		        return m.request({
+		            method: "POST",
+		            url: "http://localhost:8888/_ah/api/monApi/v1/add/"+Petition.current.titre+"/"+Petition.current.description
+		        })
+		    }
+		}
 	
 	var Splash = {
 		    view: function() {
@@ -36,14 +46,23 @@
 				    m("div", {class : "row"}, [
 				    	m("div", {class : "col-sm-3"}),
 				    	m("div", {class : "col-sm-6 border rounded"},[
-						    m("form", [
+						    m("form",{
+				                onsubmit: function(e) {
+				                    e.preventDefault()
+				                    Petition.save()
+				                }
+				            }, [
 						    	m("div", {class:"form-group"}, [
 						    		m("label", {for:"titre"}, "Titre de la pétition :"),
-						    		m("input", {type : "text", class:"form-control"}),
+						    		m("input", {type : "text", class:"form-control", 
+						    				oninput: function (e) {Petition.current.titre=e.target.value},
+							                value: Petition.current.titre}),
 						    	]),
 						    	m("div", {class:"form-group"}, [
 						    		m("label", {for:"desc"}, "Description :"),
-						    		m("textarea", {class:"form-control", rows:"10"}),
+						    		m("textarea", {class:"form-control", rows:"10",
+						    			oninput: function (e) {Petition.current.description=e.target.value},
+						                value: Petition.current.description}),
 						    	]),
 						    	m("button", {type:"submit", class:"btn btn-primary"}, "Créer la pétition")
 						    ]),

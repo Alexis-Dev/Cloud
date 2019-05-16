@@ -35,17 +35,4 @@ public class NewPetition extends HttpServlet {
 	  datastore.put(petition);
 	  response.sendRedirect("/accueil.html");
   }
-  /*
-  public void doPost(HttpServletRequest req, HttpServletResponse resp) {	
-      try {
-          // Création de l'objet
-          Petition pet = new Petition("titre", "descritption");
-          // Enregistrement de l'objet dans le Datastore avec Objectify
-          ofy().save().entity(pet).now();
-
-          resp.sendRedirect("/accueil.html");
-      } catch (IOException e) {
-          e.printStackTrace();
-      }
-  }*/
 }
