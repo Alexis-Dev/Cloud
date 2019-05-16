@@ -20,17 +20,49 @@
 	<script>
 	var root = document.body
 
+	var Petition = {
+		    list: [],
+		    loadList: function() {
+		        return m.request({
+		            method: "GET",
+		            url: "http://localhost:8888/_ah/api/monApi/v1/top"
+		        })
+		        .then(function(result) {
+		            Petition.list = result.items
+		        	console.log("got:",result.items)
+		        	m.redraw(true) // force
+		        })
+		    }
+		}
+
+	var PetitionView = {
+			oninit: Petition.loadList,
+		    view: function() {
+		        return m(".petition-list", Petition.list.map(function(item) {
+		            return m(".petition-list-item", [
+		            	m("a", {class:"petition", href: "/accueil.html"}, [
+		            		m("div",item.properties.titre),
+		            		m("div",item.properties.description),
+		            		m("div",item.properties.utilisateur.email)
+		            	])
+		            ])
+		        }))
+		    },
+			
+	}
 	
 	var Splash = {
 		    view: function() {
 		        return m("main", [
 			        m("nav", {class:"nav nav-pills nav-fill"}, [
-				    	m("a", {class:"nav-link nav-item", href: "/index.html"}, "Acceuil"),
+				    	m("a", {class:"nav-link nav-item", href: "/accueil.html"}, "Acceuil"),
 				       	m("a", {class:"nav-link nav-item", href: "/newPetition.html"}, "Lancer une pétition"),
 				       	m("a", {class:"nav-link nav-item", href: "/mesPetitions.html"}, "Mes Pétitions signées"),
 				       	m("a", {class:"nav-link nav-item", href: "/allPetitions.html"}, "Toutes les pétitions"),
-				       	m("a", {class:"nav-link nav-item", href: "/top100.html"}, "Top 100")
+				       	m("a", {class:"nav-link nav-item", href: "/top100.html"}, "Top 100"),
+				       	m("a", {class:"nav-link nav-item", href: "/deconnexion"}, "Deconnexion")
 				    ]),
+				    m("div",m(PetitionView)),
 			    ])
 		    }
 		}

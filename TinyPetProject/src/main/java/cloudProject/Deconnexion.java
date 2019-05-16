@@ -7,22 +7,21 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import com.google.appengine.api.datastore.*;
+import com.google.appengine.api.users.*;
 
 @WebServlet(
-    name = "HelloAppEngine",
-    urlPatterns = {"/hello"}
+    name = "Deconnexion",
+    urlPatterns = {"/deconnexion"}
 )
-public class HelloAppEngine extends HttpServlet {
+public class Deconnexion extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) 
       throws IOException {
 
-	  DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    response.setContentType("text/plain");
-    response.setCharacterEncoding("UTF-8");
+	  UserService userService = UserServiceFactory.getUserService();
 
-    response.getWriter().print("Hello App Engine!\r\n");
+	  response.sendRedirect(userService.createLogoutURL("/index.html"));
 
   }
 }

@@ -26,11 +26,12 @@
 		    view: function() {
 		        return m("main", [
 			        m("nav", {class:"nav nav-pills nav-fill"}, [
-				    	m("a", {class:"nav-link nav-item", href: "/index.html"}, "Acceuil"),
+				    	m("a", {class:"nav-link nav-item", href: "/accueil.html"}, "Acceuil"),
 				       	m("a", {class:"nav-link nav-item", href: "/newPetition.html"}, "Lancer une pétition"),
 				       	m("a", {class:"nav-link nav-item", href: "/mesPetitions.html"}, "Mes Pétitions signées"),
 				       	m("a", {class:"nav-link nav-item", href: "/allPetitions.html"}, "Toutes les pétitions"),
-				       	m("a", {class:"nav-link nav-item", href: "/top100.html"}, "Top 100")
+				       	m("a", {class:"nav-link nav-item", href: "/top100.html"}, "Top 100"),
+				       	m("a", {class:"nav-link nav-item", href: "/deconnexion"}, "Deconnexion")
 				    ]),
 				    m("div", {class : "row"}, [
 				    	m("div", {class : "col-sm-3"}),
@@ -44,8 +45,11 @@
 						    		m("label", {for:"desc"}, "Description :"),
 						    		m("textarea", {class:"form-control", rows:"10"}),
 						    	]),
-						    	m("button", {type:"submit", class:"btn btn-primary"}, "Lancer la pétition")
+						    	m("button", {type:"submit", class:"btn btn-primary"}, "Créer la pétition")
 						    ]),
+						    m("button", {type:"button", class:"btn btn-primary"}, [
+				        		m("a", {id : "texteBouton", href: "/newPetition"}, "Test"),
+				        	])
 					    ]),
 					    m("div", {class : "col-sm-3"}),
 			    	]),

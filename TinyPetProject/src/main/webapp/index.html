@@ -5,7 +5,6 @@
     <title>Tiny Pet</title>
     
     <link rel="stylesheet" href="/css/index.css">
-    <link rel="stylesheet" href="/css/bandeau.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
 
@@ -24,16 +23,9 @@
 	var Splash = {
 		    view: function() {
 		        return m("main", [
-			        m("nav", {class:"nav nav-pills nav-fill"}, [
-				    	m("a", {class:"nav-link nav-item", href: "/index.html"}, "Acceuil"),
-				       	m("a", {class:"nav-link nav-item", href: "/newPetition.html"}, "Lancer une pétition"),
-				       	m("a", {class:"nav-link nav-item", href: "/mesPetitions.html"}, "Mes Pétitions signées"),
-				       	m("a", {class:"nav-link nav-item", href: "/allPetitions.html"}, "Toutes les pétitions"),
-				       	m("a", {class:"nav-link nav-item", href: "/top100.html"}, "Top 100")
-				    ]),
 			        m("div", {id : "general"},[
 			        	m("button", {type:"button", class:"btn btn-primary"}, [
-			        		m("a", {id : "texteBouton", href: "/newPetition.html"}, "Lancer une pétition"),
+			        		m("a", {id : "texteBouton", href: "/connexion"}, "Se connecter"),
 			        	])
 			        ]),
 			    ])
