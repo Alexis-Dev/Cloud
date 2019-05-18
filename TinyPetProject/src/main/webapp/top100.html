@@ -5,6 +5,7 @@
     <title>Tiny Pet</title>
  
     <link rel="stylesheet" href="/css/bandeau.css">   
+    <link rel="stylesheet" href="/css/listePetition.css">    
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
 
@@ -20,6 +21,36 @@
 	<script>
 	var root = document.body
 
+	var Petition = {
+		    list: [],
+		    loadList: function() {
+		        return m.request({
+		            method: "GET",
+		            url: "http://localhost:8888/_ah/api/monApi/v1/top"
+		        })
+		        .then(function(result) {
+		            Petition.list = result.items
+		        	console.log("got:",result.items)
+		        	m.redraw(true) // force
+		        })
+		    }
+		}
+
+	var PetitionView = {
+			oninit: Petition.loadList,
+		    view: function() {
+		        return m(".petition-list", Petition.list.map(function(item) {
+		            return m(".petition-list-item", [
+		            	m("a", {class:"petition", href: "/accueil.html"}, [
+		            		m("div",item.properties.titre),
+		            		m("div",item.properties.description),
+		            		m("div",item.properties.utilisateur.email)
+		            	])
+		            ])
+		        }))
+		    },
+			
+	}
 	
 	var Splash = {
 		    view: function() {
@@ -32,9 +63,11 @@
 				       	m("a", {class:"nav-link nav-item", href: "/top100.html"}, "Top 100"),
 				       	m("a", {class:"nav-link nav-item", href: "/deconnexion"}, "Deconnexion")
 				    ]),
+				    m("div",m(PetitionView)),
 			    ])
 		    }
 		}
+	
 
 	m.mount(root, Splash)
 	</script>

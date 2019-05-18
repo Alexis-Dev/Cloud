@@ -19,9 +19,9 @@ public class Connexion extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) 
       throws IOException {
 
-	  UserService userService = UserServiceFactory.getUserService();
-
-	  response.sendRedirect(userService.createLoginURL("/accueil.html"));
+	  	UserService userService = UserServiceFactory.getUserService();
+		
+	  	response.sendRedirect(userService.createLoginURL("/accueil.html"));
 
   }
 }

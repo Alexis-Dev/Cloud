@@ -20,8 +20,23 @@
 	<script>
 	var root = document.body
 
+	var User = {
+		    list: [],
+		    save: function() {
+		        return m.request({
+		            method: "POST",
+		            url: "http://localhost:8888/_ah/api/monApi/v1/addUser"
+		        })
+		        .then(function(result) {
+		            User.list = result.items
+		        	console.log("got:",result.items)
+		        	m.redraw(true) // force
+		        })
+		    }
+		}
 	
 	var Splash = {
+	    	oninit: User.save,
 		    view: function() {
 		        return m("main", [
 			        m("nav", {class:"nav nav-pills nav-fill"}, [
@@ -40,7 +55,7 @@
 			    ])
 		    }
 		}
-
+	
 	m.mount(root, Splash)
 	</script>
   </body>

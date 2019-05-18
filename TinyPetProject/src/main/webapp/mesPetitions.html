@@ -26,7 +26,7 @@
 		    loadList: function() {
 		        return m.request({
 		            method: "GET",
-		            url: "http://localhost:8888/_ah/api/monApi/v1/top"
+		            url: "http://localhost:8888/_ah/api/monApi/v1/mesPetitions"
 		        })
 		        .then(function(result) {
 		            Petition.list = result.items
