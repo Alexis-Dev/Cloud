@@ -69,10 +69,11 @@ public class PetitionEndpoint {
 		  
 		  	User user = userService.getCurrentUser();
 		  
-			Entity e = new Entity("Petition", titre+description);
+			Entity e = new Entity("Petition", titre);
 			e.setProperty("titre", titre);
 			e.setProperty("description", description);
 			e.setProperty("utilisateur", user);
+			e.setProperty("cptSignatures", 0);
 
 			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 			datastore.put(e);
@@ -91,10 +92,12 @@ public class PetitionEndpoint {
 			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 			
 			Key cleUser = KeyFactory.createKey("Utilisateur", userId);
+			Key clePetition = KeyFactory.createKey("Petition", id);
 			
 			ArrayList<String> listePetitions;
 			
 			Entity e = datastore.get(cleUser);
+			Entity petition = datastore.get(clePetition);
 
 		  	listePetitions = new ArrayList<String>();
 			
@@ -103,14 +106,19 @@ public class PetitionEndpoint {
 			}else {
 				listePetitions = (ArrayList<String>)e.getProperty("petitionsSignees");
 			}				
-						
+			
+		  	long cpt = (long) petition.getProperty("cptSignatures");
+		  	System.out.println(cpt);
+		  	petition.setProperty("cptSignatures", cpt+1);
+		  	System.out.println(petition.getProperty("cptSignatures"));
+		  	
 			listePetitions.add(id);
 			e.setProperty("petitionsSignees", listePetitions);
 
-			datastore = DatastoreServiceFactory.getDatastoreService();
+			datastore.put(petition);
 			datastore.put(e);
 			
-			return  e;
+			return petition;
 	}
 		
 	@ApiMethod(name = "AddUser",
