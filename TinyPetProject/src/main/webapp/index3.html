@@ -5,9 +5,7 @@
     <title>Tiny Pet</title>
     
     <link rel="stylesheet" href="/css/index.css">
-    <link rel="stylesheet" href="/css/bandeau.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
 
 	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
@@ -17,45 +15,23 @@
   <body>
   
 	<script src="https://unpkg.com/mithril/mithril.js"></script>
+	<script src="/javascript/Petition.js"></script>
 	<script>
 	var root = document.body
 
-	var User = {
-		    list: [],
-		    save: function() {
-		        return m.request({
-		            method: "POST",
-		            url: "http://localhost:8888/_ah/api/monApi/v1/addUser"
-		        })
-		        .then(function(result) {
-		            User.list = result.items
-		        	console.log("got:",result.items)
-		        	m.redraw(true) // force
-		        })
-		    }
-		}
 	
 	var Splash = {
-	    	oninit: User.save,
 		    view: function() {
 		        return m("main", [
-			        m("nav", {class:"nav nav-pills nav-fill"}, [
-				    	m("a", {class:"nav-link nav-item", href: "/accueil.html"}, "Acceuil"),
-				       	m("a", {class:"nav-link nav-item", href: "/newPetition.html"}, "Lancer une pétition"),
-				       	m("a", {class:"nav-link nav-item", href: "/mesPetitions.html"}, "Mes Pétitions signées"),
-				       	m("a", {class:"nav-link nav-item", href: "/allPetitions.html"}, "Toutes les pétitions"),
-				       	m("a", {class:"nav-link nav-item", href: "/top100.html"}, "Top 100"),
-				       	m("a", {class:"nav-link nav-item", href: "/deconnexion"}, "Deconnexion")
-				    ]),
 			        m("div", {id : "general"},[
 			        	m("button", {type:"button", class:"btn btn-primary"}, [
-			        		m("a", {id : "texteBouton", href: "/newPetition.html"}, "Lancer une pétition"),
+			        		m("a", {id : "texteBouton", href: "/connexion"}, "Se connecter"),
 			        	])
 			        ]),
 			    ])
 		    }
 		}
-	
+
 	m.mount(root, Splash)
 	</script>
   </body>

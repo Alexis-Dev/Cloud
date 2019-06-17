@@ -5,34 +5,346 @@
     <title>Tiny Pet</title>
     
     <link rel="stylesheet" href="/css/index.css">
+    <link rel="stylesheet" href="/css/bandeau.css">
+    <link rel="stylesheet" href="/css/listePetition.css">
+    <link rel="stylesheet" href="/css/newPetition.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
 
 	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>    
+	<script src="https://apis.google.com/js/platform.js?onload=loadAuthClient" async defer></script>  
+	
+	<meta name="google-signin-scope" content="profile email">
+	<meta name = "google-signin-client_id" content = " 983542616944-4ik84urd213dgd1b2nk2oldgertnkvnk.apps.googleusercontent.com ">
   </head>
 
   <body>
   
 	<script src="https://unpkg.com/mithril/mithril.js"></script>
 	<script>
+	
 	var root = document.body
 
-	
-	var Splash = {
+	var NavBar = {
+			oncreate: function() {
+		        this.displaySignIn = "block"
+		        this.displaySignOut = "none"
+		    },
+			onupdate: function() {
+		        if(sessionStorage.getItem('token')){
+		            this.displaySignIn = "none"
+		            this.displaySignOut = "block"
+		        }
+		        m.redraw()
+		    },
 		    view: function() {
 		        return m("main", [
+			        m("nav", {class:"nav nav-pills nav-fill"}, [
+				    	m("a", {class:"nav-link nav-item", href: "/#!/accueil"}, "Accueil"),
+				       	m("a", {class:"nav-link nav-item", href: "/#!/newPetition"}, "Lancer une pétition"),
+				       	m("a", {class:"nav-link nav-item", href: "/#!/mesPetitions"}, "Mes Pétitions signées"),
+				       	m("a", {class:"nav-link nav-item", href: "/#!/all"}, "Toutes les pétitions"),
+				       	m("a", {class:"nav-link nav-item", href: "/#!/top"}, "Top 100"),
+			            m("button", {
+			                style: `display:${this.displaySignIn}`, onclick: () => {
+			                    gapi.auth2.getAuthInstance().signIn()
+			                        .then(() => {
+			                            this.displaySignIn = "none"
+			                            let user = gapi.auth2.getAuthInstance().currentUser.get()
+			                            sessionStorage.setItem('email',user.getBasicProfile().getEmail())
+			                            sessionStorage.setItem('id',user.getBasicProfile().getId())
+			                            sessionStorage.setItem('token',user.getAuthResponse().id_token)
+			                            this.displaySignOut = "block"
+			                            m.route.set('/accueil')
+			                        })
+			                        .catch(err => console.log(err))
+
+			                }
+			            }, "Se connecter"),
+			            m("button", {
+			                style: `display:${this.displaySignOut}`, onclick: () => {
+			                    gapi.auth2.getAuthInstance().signOut()
+			                        .then(() => {
+			                            this.displaySignIn = "block"
+			                            this.displaySignOut = "none"
+			                            sessionStorage.removeItem('user')
+			                            sessionStorage.removeItem('token')
+			                            m.route.set('/accueil')
+			                        })
+			                        .catch(err => console.log(err))
+
+			                }
+			            }, "Se déconnecter"),
+				    ]),
+			    ])
+		    }
+		}
+	
+	var User = {
+		    list: [],
+		    save: function() {
+		        return m.request({
+		            method: "POST",
+		            url: "http://localhost:8888/_ah/api/monApi/v1/addUser/"+sessionStorage.getItem('id')+"/"+sessionStorage.getItem('email')
+		        })
+		        .then(function(result) {
+		            User.list = result.items
+		        	console.log("got:",result.items)
+		        	m.redraw(true) // force
+		        })
+		    }
+		}
+	
+	var AllLoad = {
+		    list: [],
+		    loadList: function() {
+		        return m.request({
+		            method: "GET",
+		            url: "http://localhost:8888/_ah/api/monApi/v1/all"
+		        })
+		        .then(function(result) {
+		            AllLoad.list = result.items
+		        	console.log("got:",result.items)
+		        	m.redraw(true) // force
+		        })
+		    }
+		}
+
+	var Signature = {
+		    current: {},
+		    save: function() {
+		    	console.log("saving...",Signature.current)
+		        return m.request({
+		            method: "POST",
+		            url: "http://localhost:8888/_ah/api/monApi/v1/signature/"+Signature.current.titre+"/"+sessionStorage.getItem('id')
+		        })
+		    }
+		}
+	
+	var NewPetition = {
+		    current: {},
+		    save: function() {
+		    	console.log("saving...",NewPetition.current)
+		        return m.request({
+		            method: "POST",
+		            url: "http://localhost:8888/_ah/api/monApi/v1/add/"+NewPetition.current.titre+"/"+NewPetition.current.description+"/"+sessionStorage.getItem('email')
+		        })
+		    }
+		}
+	
+	var MesPetitionsLoad = {
+		    list: [],
+		    loadList: function() {
+		        return m.request({
+		            method: "GET",
+		            url: "http://localhost:8888/_ah/api/monApi/v1/mesPetitions/"+sessionStorage.getItem('id')
+		        })
+		        .then(function(result) {
+		            MesPetitionsLoad.list = result.items
+		        	console.log("got:",result.items)
+		        	m.redraw(true) // force
+		        })
+		    }
+		}
+	
+	var TopLoad = {
+		    list: [],
+		    loadList: function() {
+		        return m.request({
+		            method: "GET",
+		            url: "http://localhost:8888/_ah/api/monApi/v1/top"
+		        })
+		        .then(function(result) {
+		            TopLoad.list = result.items
+		        	console.log("got:",result.items)
+		        	m.redraw(true) // force
+		        })
+		    }
+		}
+	
+	var AllView = {
+			oninit: AllLoad.loadList,
+		    view: function() {
+		        return m(".petition-list", AllLoad.list.map(function(item) {
+		            return m(".petition-list-item", [
+		            	m("a", {class:"petition", href: "/#!/accueil"}, [
+		            		m("div",item.properties.titre),
+		            		m("div",item.properties.description),
+		            		m("div",item.properties.utilisateur),
+		            		m("div",item.properties.cptSignatures),
+		            		m("button", {
+		            			onclick: function(e){
+		            				e.preventDefault()
+				                    Signature.current.titre=item.properties.titre
+				                    Signature.save()
+		            			},
+		            			class:"btn btn-primary"
+		            		}, "Signer la pétition"),
+		            	])
+		            ])
+		        }))
+		    },
+			
+	}
+
+	var NewPetitionView = {
+		    view: function() {
+		        return m("main", [
+			        m(NavBar),
+				    m("div", {class : "row"}, [
+				    	m("div", {class : "col-sm-3"}),
+				    	m("div", {class : "col-sm-6 border rounded"},[
+						    m("form",{
+				                onsubmit: function(e) {
+				                    e.preventDefault()
+				                    NewPetition.save()
+				                    m.route.set("/all")
+				                }
+				            }, [
+						    	m("div", {class:"form-group"}, [
+						    		m("label", {for:"titre"}, "Titre de la pétition :"),
+						    		m("input", {type : "text", class:"form-control", 
+						    				oninput: function (e) {NewPetition.current.titre=e.target.value},
+							                value: NewPetition.current.titre}),
+						    	]),
+						    	m("div", {class:"form-group"}, [
+						    		m("label", {for:"desc"}, "Description :"),
+						    		m("textarea", {class:"form-control", rows:"10",
+						    			oninput: function (e) {NewPetition.current.description=e.target.value},
+						                value: NewPetition.current.description}),
+						    	]),
+						    	m("button", {type:"submit", class:"btn btn-primary"}, "Créer la pétition")
+						    ])
+					    ]),
+					    m("div", {class : "col-sm-3"}),
+			    	]),
+			    ])
+		    }
+		}
+	
+	var MesPetitionsView = {
+			oninit: MesPetitionsLoad.loadList,
+		    view: function() {
+		        return m(".petition-list", MesPetitionsLoad.list.map(function(item) {
+		            return m(".petition-list-item", [
+		            	m("a", {class:"petition", href: "/accueil.html"}, [
+		            		m("div",item.properties.titre),
+		            		m("div",item.properties.description),
+		            		m("div",item.properties.cptSignatures),
+		            		m("div",item.properties.utilisateur.email)
+		            	])
+		            ])
+		        }))
+		    },
+			
+	}
+	
+	var TopView = {
+			oninit: TopLoad.loadList,
+		    view: function() {
+		        return m(".petition-list", TopLoad.list.map(function(item) {
+		            return m(".petition-list-item", [
+		            	m("a", {class:"petition", href: "/accueil.html"}, [
+		            		m("div",item.properties.titre),
+		            		m("div",item.properties.description),
+		            		m("div",item.properties.utilisateur.email),
+		            		m("div",item.properties.cptSignatures),
+		            		m("button", {
+		            			onclick: function(e){
+		            				e.preventDefault()
+				                    Signature.current.titre=item.properties.titre
+				                    Signature.save()
+		            			},
+		            			class:"btn btn-primary"
+		            		}, "Signer la pétition"),
+		            	])
+		            ])
+		        }))
+		    },
+			
+	}
+	
+	var MesPetitions = {
+		    view: function() {
+		        return m("main", [
+		        	m(NavBar),
+		        	m("div",m(MesPetitionsView)),
+			    ])
+		    }
+		}
+	
+	var All = {
+		    view: function() {
+		        return m("main", [
+		        	m(NavBar),
+		        	m("div",m(AllView)),
+			    ])
+		    }
+		}
+	
+	var Top = {
+		    view: function() {
+		        return m("main", [
+		        	m(NavBar),
+		        	m("div",m(TopView)),
+			    ])
+		    }
+		}
+	
+	var Accueil = {
+	    	oninit: User.save,
+		    view: function() {
+		        return m("main", [
+		        	m(NavBar),
 			        m("div", {id : "general"},[
-			        	m("button", {type:"button", class:"btn btn-primary"}, [
-			        		m("a", {id : "texteBouton", href: "/connexion"}, "Se connecter"),
+			        	m("button", {type:"button",id:"btn-accueil" ,class:"btn btn-primary"}, [
+			        		m("a", {id : "texteBouton", href: "/#!newPetition"}, "Lancer une pétition"),
 			        	])
 			        ]),
 			    ])
 		    }
 		}
+	
+	m.route(root, "/accueil", {
+	    "/accueil": Accueil,
+	    "/all": All,
+	    "/newPetition": NewPetitionView,
+	    "/mesPetitions": MesPetitions,
+	    "/top": Top,
+	})
+	
+        var gapi = gapi || {};
 
-	m.mount(root, Splash)
+        function loadAuthClient() {
+            gapi.load('auth2', initGoogleAuth);
+        }
+
+        function initGoogleAuth(clientId = '983542616944-4ik84urd213dgd1b2nk2oldgertnkvnk.apps.googleusercontent.com') {
+            gapi.auth2.init({
+                client_id: clientId,
+            })
+                .then()
+                .catch(err => {
+                    console.log(err);
+                });
+        }
+        
+        function isSignedIn() {
+            if (document.getElementById("btn-co") && document.getElementById("btn-deco")) {
+                if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
+                    document.getElementById("btn-co").style.visibility = "hidden";
+                    document.getElementById("btn-deco").style.display = "flex";
+                } else {
+                    document.getElementById("btn-co").style.display = "flex";
+                    document.getElementById("btn-deco").style.visibility = "hidden";
+                }
+            }
+        }
+
+
+
+	
 	</script>
   </body>
 </html>

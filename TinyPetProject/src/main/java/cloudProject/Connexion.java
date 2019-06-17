@@ -21,7 +21,7 @@ public class Connexion extends HttpServlet {
 
 	  	UserService userService = UserServiceFactory.getUserService();
 		
-	  	response.sendRedirect(userService.createLoginURL("/accueil.html"));
+	  	response.sendRedirect(userService.createLoginURL("/index.html"));
 
   }
 }

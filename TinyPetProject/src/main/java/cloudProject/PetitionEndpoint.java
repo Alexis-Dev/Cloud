@@ -6,6 +6,7 @@ import com.google.api.server.spi.config.Named;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.config.ApiMethod.HttpMethod;
 import com.google.appengine.api.datastore.*;
+import com.google.appengine.api.datastore.Query.SortDirection;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -17,12 +18,28 @@ import java.util.List;
 version = "v1")
 public class PetitionEndpoint {
 
-	@ApiMethod(name = "listMyPetitions",
-			path = "mesPetitions")
-	public List<Entity> listMyPetitionEntity() throws EntityNotFoundException {
+	@ApiMethod(name = "getUser",
+			path = "getUser")
+	public User getUser() {
+
 		  	UserService userService = UserServiceFactory.getUserService();  
 		  	User user = userService.getCurrentUser();
-		  	String userId = user.getUserId();
+		  	System.out.println(user);
+			
+		  	if(user != null) {
+		  		return  user;
+		  	}else {
+		  		return null;
+		  	}
+			
+	}
+	
+	@ApiMethod(name = "listMyPetitions",
+			path = "mesPetitions/{userId}")
+	public List<Entity> listMyPetitionEntity(@Named("userId") String userId) throws EntityNotFoundException {
+		  	//UserService userService = UserServiceFactory.getUserService();  
+		  	//User user = userService.getCurrentUser();
+		  	//String userId = user.getUserId();
 		  	
 			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 			
@@ -42,11 +59,11 @@ public class PetitionEndpoint {
 	@ApiMethod(name = "listTop",
 			path = "top")
 	public List<Entity> listTopPetitionEntity() {
-			Query q = new Query("Petition");
+			Query q = new Query("Petition").addSort("cptSignatures", SortDirection.DESCENDING);;
 
 			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 			PreparedQuery pq = datastore.prepare(q);
-			List<Entity> result = pq.asList(FetchOptions.Builder.withDefaults());
+			List<Entity> result = pq.asList(FetchOptions.Builder.withLimit(100));
 			return result;
 	}
 	
@@ -62,17 +79,17 @@ public class PetitionEndpoint {
 	}	
 	
 	@ApiMethod(name = "addPetition",
-			path = "add/{titre}/{description}")
-	public Entity addPetition(@Named("titre") String titre, @Named("description") String description) {
+			path = "add/{titre}/{description}/{email}")
+	public Entity addPetition(@Named("titre") String titre, @Named("description") String description, @Named("email") String email) {
 
-			UserService userService = UserServiceFactory.getUserService();
+			/*UserService userService = UserServiceFactory.getUserService();
 		  
-		  	User user = userService.getCurrentUser();
+		  	User user = userService.getCurrentUser();*/
 		  
 			Entity e = new Entity("Petition", titre);
 			e.setProperty("titre", titre);
 			e.setProperty("description", description);
-			e.setProperty("utilisateur", user);
+			e.setProperty("utilisateur", email);
 			e.setProperty("cptSignatures", 0);
 
 			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -82,12 +99,12 @@ public class PetitionEndpoint {
 	}
 	
 	@ApiMethod(name = "Signature",
-			path = "signature/{id}")
-	public Entity Signature(@Named("id") String id) throws EntityNotFoundException {
+			path = "signature/{id}/{userId}")
+	public Entity Signature(@Named("id") String id, @Named("userId") String userId) throws EntityNotFoundException {
 
-		  	UserService userService = UserServiceFactory.getUserService();  
+		  	/*UserService userService = UserServiceFactory.getUserService();  
 		  	User user = userService.getCurrentUser();
-		  	String userId = user.getUserId();
+		  	String userId = user.getUserId();*/
 		  	
 			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 			
@@ -107,7 +124,20 @@ public class PetitionEndpoint {
 				listePetitions = (ArrayList<String>)e.getProperty("petitionsSignees");
 			}				
 			
-		  	long cpt = (long) petition.getProperty("cptSignatures");
+		  	if(!listePetitions.contains(id)) {
+		  		long cpt = (long) petition.getProperty("cptSignatures");
+			  	System.out.println(cpt);
+			  	petition.setProperty("cptSignatures", cpt+1);
+			  	System.out.println(petition.getProperty("cptSignatures"));
+			  	
+		  		listePetitions.add(id);
+				e.setProperty("petitionsSignees", listePetitions);
+				
+				datastore.put(petition);
+				datastore.put(e);
+		  	}
+		  	
+		  	/*long cpt = (long) petition.getProperty("cptSignatures");
 		  	System.out.println(cpt);
 		  	petition.setProperty("cptSignatures", cpt+1);
 		  	System.out.println(petition.getProperty("cptSignatures"));
@@ -116,19 +146,20 @@ public class PetitionEndpoint {
 			e.setProperty("petitionsSignees", listePetitions);
 
 			datastore.put(petition);
-			datastore.put(e);
+			datastore.put(e);*/
 			
 			return petition;
 	}
 		
 	@ApiMethod(name = "AddUser",
-			path = "addUser")
-	public Entity addUser() {
+			path = "addUser/{userId}/{email}")
+	public Entity addUser(@Named("userId") String userId, @Named("email") String email) {
 
-		  	UserService userService = UserServiceFactory.getUserService();  
+		  	/*UserService userService = UserServiceFactory.getUserService();  
 		  	User user = userService.getCurrentUser();
+		  	System.out.println(user);
 		  	String userId = user.getUserId();
-		  	String email = user.getEmail();
+		  	String email = user.getEmail();*/
 		  	
 			Query q = new Query("Utilisateur").setFilter(new Query.FilterPredicate("email", Query.FilterOperator.EQUAL, email));
 			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
