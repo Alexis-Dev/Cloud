@@ -110,6 +110,38 @@
 		        })
 		    }
 		}
+	
+	var SuivantLoad = {
+		    list: [],
+		    loadList: function(id) {
+		        return m.request({
+		            method: "POST",
+		            url: "http://localhost:8888/_ah/api/monApi/v1/suivant/"+id
+		        })
+		        .then(function(result) {
+		            SuivantLoad.list = result.items
+		        	console.log("got:",result.items)
+		        	m.redraw(true) // force
+		        })
+		    }
+		}
+	
+	var PrecedentLoad = {
+		    list: [],
+		    loadList: function(id) {
+		        return m.request({
+		            method: "POST",
+		            url: "http://localhost:8888/_ah/api/monApi/v1/precedent/"+id
+		        })
+		        .then(function(result) {
+		            PrecedentLoad.list = result.items
+		            PrecedentLoad.list.sort(compare)
+		            console.log("test:",PrecedentLoad.list )
+		        	//console.log("got:",result.items)
+		        	m.redraw(true) // force
+		        })
+		    }
+		}
 
 	var Signature = {
 		    current: {},
@@ -166,24 +198,128 @@
 	var AllView = {
 			oninit: AllLoad.loadList,
 		    view: function() {
-		        return m(".petition-list", AllLoad.list.map(function(item) {
-		            return m(".petition-list-item", [
-		            	m("a", {class:"petition", href: "/#!/accueil"}, [
-		            		m("div",item.properties.titre),
-		            		m("div",item.properties.description),
-		            		m("div",item.properties.utilisateur),
-		            		m("div",item.properties.cptSignatures),
-		            		m("button", {
-		            			onclick: function(e){
-		            				e.preventDefault()
-				                    Signature.current.titre=item.properties.titre
-				                    Signature.save()
-		            			},
-		            			class:"btn btn-primary"
-		            		}, "Signer la pétition"),
-		            	])
-		            ])
-		        }))
+		        return m("div", [m(".petition-list", AllLoad.list.map(function(item) {
+		            return m("div",[
+				            m(".petition-list-item", [
+				            	m("a", {class:"petition", href: "/#!/accueil"}, [
+				            		m("div",item.properties.titre),
+				            		m("div",item.properties.description),
+				            		m("div",item.properties.utilisateur),
+				            		m("div",item.properties.cptSignatures),
+				            		m("button", {
+				            			onclick: function(e){
+				            				e.preventDefault()
+						                    Signature.current.titre=item.properties.titre
+						                    Signature.save()
+				            			},
+				            			class:"btn btn-primary"
+				            		}, "Signer la pétition"),
+				            		m("a", {href: "/#!/suivant/"+item.properties.titre}, "Suivant"),
+				            	]),
+				            	
+				            ])
+			            ])
+			        })),
+		            m("button",{
+	        			onclick: function(){
+	        				m.route.set("/suivant/:id", {id: AllLoad.list[AllLoad.list.length-1].properties.titre})}
+	        			},"Suivant"),
+		        ])
+		    },
+			
+	}
+	
+	var SuivantView = {
+			oninit: function(vnode) {
+				console.log("pouet")
+				console.log(vnode.attrs.data)
+				
+				SuivantLoad.loadList(vnode.attrs.data)
+		    },
+		    view: function(vnode) {
+		        return m("div", [m(".petition-list", SuivantLoad.list.map(function(item) {
+			            return m("div", [
+				            m(".petition-list-item", [
+				            	m("a", {class:"petition", href: "/#!/accueil"}, [
+				            		m("div",item.properties.titre),
+				            		m("div",item.properties.description),
+				            		m("div",item.properties.utilisateur),
+				            		m("div",item.properties.cptSignatures),
+				            		m("button", {
+				            			onclick: function(e){
+				            				e.preventDefault()
+						                    Signature.current.titre=item.properties.titre
+						                    Signature.save()
+				            			},
+				            			class:"btn btn-primary"
+				            		}, "Signer la pétition"),
+				            	]),
+				            
+				            ])
+				            
+			            ])
+			        })),
+			        m("button",{
+	        			onclick: function(){
+	        				//console.log(SuivantLoad.list[1].properties.titre)
+	        				m.route.set("/precedent/:id", {id: SuivantLoad.list[0].properties.titre})
+	            			PrecedentLoad.loadList(SuivantLoad.list[0].properties.titre)}
+	        			},"Precedent"),
+			        m("button",{
+	        			onclick: function(){
+	        				//console.log(SuivantLoad.list[1].properties.titre)
+	        				m.route.set("/suivant/:id", {id: SuivantLoad.list[SuivantLoad.list.length-1].properties.titre})
+	            			SuivantLoad.loadList(SuivantLoad.list[SuivantLoad.list.length-1].properties.titre)}
+	        			},"Suivant"),
+		        ])
+		    },
+			
+	}
+	
+	var PrecedentView = {
+			oninit: function(vnode) {
+				console.log("pouet")
+				console.log(vnode.attrs.data)
+				
+				PrecedentLoad.loadList(vnode.attrs.data)
+		    },
+		    view: function(vnode) {
+		        return m("div", [m(".petition-list", PrecedentLoad.list.map(function(item) {
+			            return m("div", [
+				            m(".petition-list-item", [
+				            	m("a", {class:"petition", href: "/#!/accueil"}, [
+				            		m("div",item.properties.titre),
+				            		m("div",item.properties.description),
+				            		m("div",item.properties.utilisateur),
+				            		m("div",item.properties.cptSignatures),
+				            		m("button", {
+				            			onclick: function(e){
+				            				e.preventDefault()
+						                    Signature.current.titre=item.properties.titre
+						                    Signature.save()
+				            			},
+				            			class:"btn btn-primary"
+				            		}, "Signer la pétition"),
+				            	]),
+				            
+				            ])
+				            
+			            ])
+			        })),
+			        m("button",{
+	        			onclick: function(){
+	        				console.log(PrecedentLoad.list)
+	        				m.route.set("/precedent/:id", {id: PrecedentLoad.list[0].properties.titre})
+	            			PrecedentLoad.loadList(PrecedentLoad.list[0].properties.titre)}
+	        			},"Precedent"),
+			        m("button",{
+	        			onclick: function(){
+	        				console.log(PrecedentLoad.list)
+	        				//console.log(SuivantLoad.list[1].properties.titre)
+	        				m.route.set("/suivant/:id", {id: PrecedentLoad.list[PrecedentLoad.list.length-1].properties.titre})
+	            			SuivantLoad.loadList(PrecedentLoad.list[PrecedentLoad.list.length-1].properties.titre)}
+	        			},"Suivant"),
+		        ])
 		    },
 			
 	}
@@ -283,6 +419,24 @@
 		    }
 		}
 	
+	var Suivant = {
+		    view: function(vnode) {
+		        return m("main", [
+		        	m(NavBar),
+		        	m("div",m(SuivantView, {data: vnode.attrs.id})),
+		        ])
+		    }
+		}
+	
+	var Precedent = {
+		    view: function(vnode) {
+		        return m("main", [
+		        	m(NavBar),
+		        	m("div",m(PrecedentView, {data: vnode.attrs.id})),
+		        ])
+		    }
+		}
+	
 	var Top = {
 		    view: function() {
 		        return m("main", [
@@ -312,6 +466,8 @@
 	    "/newPetition": NewPetitionView,
 	    "/mesPetitions": MesPetitions,
 	    "/top": Top,
+	    "/suivant/:id": Suivant,
+	    "/precedent/:id": Precedent
 	})
 	
         var gapi = gapi || {};
@@ -341,8 +497,20 @@
                 }
             }
         }
+        
+        function initializeVnode() {
+            console.log("initialize vnode")
+        }
 
 
+        function compare(a, b) {
+        	  if (a.properties.titre < b.properties.titre)
+        	     return -1;
+        	  if (a.properties.titre < b.properties.titre)
+        	     return 1;
+        	  // a doit être égal à b
+        	  return 0;
+        	}
 
 	
 	</script>
