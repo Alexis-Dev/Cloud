@@ -44,13 +44,18 @@ public class PetitionEndpoint {
 			Key cleUser = KeyFactory.createKey("Utilisateur", userId);
 			
 			Entity e = datastore.get(cleUser);
+			List<Entity> result;
 			ArrayList<String> listePetitions = (ArrayList<String>)e.getProperty("petitionsSignees");
-			
-			Query q = new Query("Petition").setFilter(new Query.FilterPredicate("titre", Query.FilterOperator.IN, listePetitions));
+			if(listePetitions != null) {
+				Query q = new Query("Petition").setFilter(new Query.FilterPredicate("titre", Query.FilterOperator.IN, listePetitions));
 
-			datastore = DatastoreServiceFactory.getDatastoreService();
-			PreparedQuery pq = datastore.prepare(q);
-			List<Entity> result = pq.asList(FetchOptions.Builder.withDefaults());
+				datastore = DatastoreServiceFactory.getDatastoreService();
+				PreparedQuery pq = datastore.prepare(q);
+				result = pq.asList(FetchOptions.Builder.withDefaults());
+			}else {
+				result = new ArrayList<Entity>();
+			}
+			
 			return result;
 	}
 	
@@ -173,6 +178,8 @@ public class PetitionEndpoint {
 			
 			if(result.isEmpty()) {
 			  	e.setProperty("email", email);
+			  	ArrayList<String> listePetitions = new ArrayList<String>();
+			  	e.setProperty("petitionsSignees", listePetitions);
 				datastore = DatastoreServiceFactory.getDatastoreService();
 				datastore.put(e);
 			}

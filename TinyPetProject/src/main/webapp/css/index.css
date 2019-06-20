@@ -13,12 +13,12 @@ html, body, main{
 	height: 94%;
 }*/
 
-#btn-accueil{
+#txt-accueil{
 	position: absolute;
 	top: 50%;
-	left :45%;
-	transform: translateY(-50%);
-	background-color:#ec2c22;
+	left :34%;
+	/*transform: translateY(-50%);*/
+	/*background-color:#ec2c22;*/
    
 }
 

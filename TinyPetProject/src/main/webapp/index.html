@@ -25,6 +25,7 @@
 	<script>
 	
 	var root = document.body
+	var page = 1
 
 	var NavBar = {
 			oncreate: function() {
@@ -35,15 +36,20 @@
 		        if(sessionStorage.getItem('token')){
 		            this.displaySignIn = "none"
 		            this.displaySignOut = "block"
-		        }
+		            document.getElementById("mesPetitions").style.display ="block"
+		            document.getElementById("newPetition").style.display ="block"
+		        }else{
+		        	document.getElementById("mesPetitions").style.display ="none"
+		        	document.getElementById("newPetition").style.display ="none"
+		        }		        
 		        m.redraw()
 		    },
 		    view: function() {
 		        return m("main", [
 			        m("nav", {class:"nav nav-pills nav-fill"}, [
 				    	m("a", {class:"nav-link nav-item", href: "/#!/accueil"}, "Accueil"),
-				       	m("a", {class:"nav-link nav-item", href: "/#!/newPetition"}, "Lancer une pétition"),
-				       	m("a", {class:"nav-link nav-item", href: "/#!/mesPetitions"}, "Mes Pétitions signées"),
+				       	m("a", {class:"nav-link nav-item",id:"newPetition", href: "/#!/newPetition"}, "Lancer une pétition"),
+				       	m("a", {class:"nav-link nav-item",id:"mesPetitions", href: "/#!/mesPetitions"}, "Mes Pétitions signées"),
 				       	m("a", {class:"nav-link nav-item", href: "/#!/all"}, "Toutes les pétitions"),
 				       	m("a", {class:"nav-link nav-item", href: "/#!/top"}, "Top 100"),
 			            m("button", {
@@ -197,6 +203,23 @@
 	
 	var AllView = {
 			oninit: AllLoad.loadList,
+			onupdate: function() {
+				if(AllLoad.list.length < 2){
+		            document.getElementById("suivantAll").style.display ="none"
+		        }else{
+		        	document.getElementById("suivantAll").style.display = "block"
+		        }
+				if(sessionStorage.getItem('token')){
+					for (var i = 0; i < AllLoad.list.length; i++) {
+		        		document.getElementById("sign"+i).style.display = "block"
+		        	}
+		        }else{        	
+		        	for (var i = 0; i < AllLoad.list.length; i++) {
+		        		document.getElementById("sign"+i).style.display = "none"
+		        	}
+		        }	
+		        m.redraw()
+		    },
 		    view: function() {
 		        return m("div", [m(".petition-list", AllLoad.list.map(function(item) {
 		            return m("div",[
@@ -206,23 +229,26 @@
 				            		m("div",item.properties.description),
 				            		m("div",item.properties.utilisateur),
 				            		m("div",item.properties.cptSignatures),
-				            		m("button", {
+				            		m("button", {id:"sign"+AllLoad.list.indexOf(item),
 				            			onclick: function(e){
 				            				e.preventDefault()
+				            				console.log
 						                    Signature.current.titre=item.properties.titre
 						                    Signature.save()
 				            			},
 				            			class:"btn btn-primary"
 				            		}, "Signer la pétition"),
-				            		m("a", {href: "/#!/suivant/"+item.properties.titre}, "Suivant"),
 				            	]),
 				            	
 				            ])
 			            ])
 			        })),
-		            m("button",{
+		            m("button",{id:"suivantAll",
 	        			onclick: function(){
-	        				m.route.set("/suivant/:id", {id: AllLoad.list[AllLoad.list.length-1].properties.titre})}
+	        				m.route.set("/suivant/:id", {id: AllLoad.list[AllLoad.list.length-1].properties.titre})
+		            		page = page + 1
+		            		console.log(page)
+		            		console.log(sessionStorage.getItem('id'))}
 	        			},"Suivant"),
 		        ])
 		    },
@@ -231,10 +257,24 @@
 	
 	var SuivantView = {
 			oninit: function(vnode) {
-				console.log("pouet")
-				console.log(vnode.attrs.data)
-				
 				SuivantLoad.loadList(vnode.attrs.data)
+		    },
+			onupdate: function() {
+				if(SuivantLoad.list.length < 2){
+		            document.getElementById("suivant").style.display ="none"
+		        }else{
+		        	document.getElementById("suivant").style.display = "block"
+		        }
+				if(sessionStorage.getItem('token')){
+					for (var i = 0; i < SuivantLoad.list.length; i++) {
+		        		document.getElementById("signSuiv"+i).style.display = "block"
+		        	}
+		        }else{        	
+		        	for (var i = 0; i < SuivantLoad.list.length; i++) {
+		        		document.getElementById("signSuiv"+i).style.display = "none"
+		        	}
+		        }
+		        m.redraw()
 		    },
 		    view: function(vnode) {
 		        return m("div", [m(".petition-list", SuivantLoad.list.map(function(item) {
@@ -245,7 +285,7 @@
 				            		m("div",item.properties.description),
 				            		m("div",item.properties.utilisateur),
 				            		m("div",item.properties.cptSignatures),
-				            		m("button", {
+				            		m("button", {id:"signSuiv"+SuivantLoad.list.indexOf(item),
 				            			onclick: function(e){
 				            				e.preventDefault()
 						                    Signature.current.titre=item.properties.titre
@@ -263,13 +303,15 @@
 	        			onclick: function(){
 	        				//console.log(SuivantLoad.list[1].properties.titre)
 	        				m.route.set("/precedent/:id", {id: SuivantLoad.list[0].properties.titre})
-	            			PrecedentLoad.loadList(SuivantLoad.list[0].properties.titre)}
+	            			PrecedentLoad.loadList(SuivantLoad.list[0].properties.titre)
+	            			page = page - 1}
 	        			},"Precedent"),
-			        m("button",{
+			        m("button",{id:"suivant",
 	        			onclick: function(){
 	        				//console.log(SuivantLoad.list[1].properties.titre)
 	        				m.route.set("/suivant/:id", {id: SuivantLoad.list[SuivantLoad.list.length-1].properties.titre})
-	            			SuivantLoad.loadList(SuivantLoad.list[SuivantLoad.list.length-1].properties.titre)}
+	            			SuivantLoad.loadList(SuivantLoad.list[SuivantLoad.list.length-1].properties.titre)
+	            			page = page + 1}
 	        			},"Suivant"),
 		        ])
 		    },
@@ -278,10 +320,24 @@
 	
 	var PrecedentView = {
 			oninit: function(vnode) {
-				console.log("pouet")
-				console.log(vnode.attrs.data)
-				
 				PrecedentLoad.loadList(vnode.attrs.data)
+		    },
+			onupdate: function() {
+				if(page == 1){
+		            document.getElementById("precedent").style.display ="none"
+		        }else{
+		        	document.getElementById("precedent").style.display = "block"
+		        }
+				if(sessionStorage.getItem('token')){
+					for (var i = 0; i < PrecedentLoad.list.length; i++) {
+		        		document.getElementById("signPrec"+i).style.display = "block"
+		        	}
+		        }else{        	
+		        	for (var i = 0; i < PrecedentLoad.list.length; i++) {
+		        		document.getElementById("signPrec"+i).style.display = "none"
+		        	}
+		        }
+		        m.redraw()
 		    },
 		    view: function(vnode) {
 		        return m("div", [m(".petition-list", PrecedentLoad.list.map(function(item) {
@@ -292,7 +348,7 @@
 				            		m("div",item.properties.description),
 				            		m("div",item.properties.utilisateur),
 				            		m("div",item.properties.cptSignatures),
-				            		m("button", {
+				            		m("button", {id:"signPrec"+PrecedentLoad.list.indexOf(item),
 				            			onclick: function(e){
 				            				e.preventDefault()
 						                    Signature.current.titre=item.properties.titre
@@ -306,18 +362,20 @@
 				            
 			            ])
 			        })),
-			        m("button",{
+			        m("button",{id:"precedent",
 	        			onclick: function(){
 	        				console.log(PrecedentLoad.list)
 	        				m.route.set("/precedent/:id", {id: PrecedentLoad.list[0].properties.titre})
-	            			PrecedentLoad.loadList(PrecedentLoad.list[0].properties.titre)}
+	            			PrecedentLoad.loadList(PrecedentLoad.list[0].properties.titre)
+	            			page = page - 1}
 	        			},"Precedent"),
 			        m("button",{
 	        			onclick: function(){
 	        				console.log(PrecedentLoad.list)
 	        				//console.log(SuivantLoad.list[1].properties.titre)
 	        				m.route.set("/suivant/:id", {id: PrecedentLoad.list[PrecedentLoad.list.length-1].properties.titre})
-	            			SuivantLoad.loadList(PrecedentLoad.list[PrecedentLoad.list.length-1].properties.titre)}
+	            			SuivantLoad.loadList(PrecedentLoad.list[PrecedentLoad.list.length-1].properties.titre)
+	            			page = page + 1}
 	        			},"Suivant"),
 		        ])
 		    },
@@ -378,6 +436,18 @@
 	
 	var TopView = {
 			oninit: TopLoad.loadList,
+			onupdate: function() {
+				if(sessionStorage.getItem('token')){
+					for (var i = 0; i < TopLoad.list.length; i++) {
+		        		document.getElementById("signTop"+i).style.display = "block"
+		        	}
+		        }else{        	
+		        	for (var i = 0; i < TopLoad.list.length; i++) {
+		        		document.getElementById("signTop"+i).style.display = "none"
+		        	}
+		        }
+		        m.redraw()
+		    },
 		    view: function() {
 		        return m(".petition-list", TopLoad.list.map(function(item) {
 		            return m(".petition-list-item", [
@@ -386,7 +456,7 @@
 		            		m("div",item.properties.description),
 		            		m("div",item.properties.utilisateur.email),
 		            		m("div",item.properties.cptSignatures),
-		            		m("button", {
+		            		m("button", {id:"signTop"+TopLoad.list.indexOf(item),
 		            			onclick: function(e){
 		            				e.preventDefault()
 				                    Signature.current.titre=item.properties.titre
@@ -452,10 +522,9 @@
 		        return m("main", [
 		        	m(NavBar),
 			        m("div", {id : "general"},[
-			        	m("button", {type:"button",id:"btn-accueil" ,class:"btn btn-primary"}, [
-			        		m("a", {id : "texteBouton", href: "/#!newPetition"}, "Lancer une pétition"),
-			        	])
-			        ]),
+			        	m("div", {id:"txt-accueil" }, 
+			        			"Afin de profiter de toutes les fonctionnalités du site, connectez-vous !")
+			        	]),
 			    ])
 		    }
 		}
@@ -486,23 +555,6 @@
                 });
         }
         
-        function isSignedIn() {
-            if (document.getElementById("btn-co") && document.getElementById("btn-deco")) {
-                if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
-                    document.getElementById("btn-co").style.visibility = "hidden";
-                    document.getElementById("btn-deco").style.display = "flex";
-                } else {
-                    document.getElementById("btn-co").style.display = "flex";
-                    document.getElementById("btn-deco").style.visibility = "hidden";
-                }
-            }
-        }
-        
-        function initializeVnode() {
-            console.log("initialize vnode")
-        }
-
-
         function compare(a, b) {
         	  if (a.properties.titre < b.properties.titre)
         	     return -1;
