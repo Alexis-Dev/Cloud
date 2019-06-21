@@ -27,6 +27,7 @@
 	var root = document.body
 	var page = 1
 
+	//Barre de navigation
 	var NavBar = {
 			oncreate: function() {
 		        this.displaySignIn = "block"
@@ -50,7 +51,6 @@
 				    	m("a", {class:"nav-link nav-item", href: "/#!/accueil"}, "Accueil"),
 				       	m("a", {class:"nav-link nav-item",id:"newPetition", href: "/#!/newPetition"}, "Lancer une pétition"),
 				       	m("a", {class:"nav-link nav-item",id:"mesPetitions", href: "/#!/mesPetitions"}, "Mes Pétitions signées"),
-				       	m("a", {class:"nav-link nav-item", href: "/#!/all"}, "Toutes les pétitions"),
 				       	m("a", {class:"nav-link nav-item", href: "/#!/top"}, "Top 100"),
 			            m("button", {
 			                style: `display:${this.displaySignIn}`, onclick: () => {
@@ -87,127 +87,113 @@
 		    }
 		}
 	
-	var User = {
-		    list: [],
-		    save: function() {
-		        return m.request({
-		            method: "POST",
-		            url: "http://localhost:8888/_ah/api/monApi/v1/addUser/"+sessionStorage.getItem('id')+"/"+sessionStorage.getItem('email')
-		        })
-		        .then(function(result) {
-		            User.list = result.items
-		        	console.log("got:",result.items)
-		        	m.redraw(true) // force
-		        })
-		    }
-		}
-	
+	//Appel à l'api permettant de charger les 100 première pétitions 
 	var AllLoad = {
 		    list: [],
 		    loadList: function() {
 		        return m.request({
 		            method: "GET",
-		            url: "http://localhost:8888/_ah/api/monApi/v1/all"
+		            url: "https://claudproject.appspot.com/_ah/api/monApi/v1/all"
 		        })
 		        .then(function(result) {
 		            AllLoad.list = result.items
-		        	console.log("got:",result.items)
 		        	m.redraw(true) // force
 		        })
 		    }
 		}
 	
+	//Appel à l'api permettant de charger les 100 pages suivantes de la pagination 
 	var SuivantLoad = {
 		    list: [],
 		    loadList: function(id) {
 		        return m.request({
 		            method: "POST",
-		            url: "http://localhost:8888/_ah/api/monApi/v1/suivant/"+id
+		            url: "https://claudproject.appspot.com/_ah/api/monApi/v1/suivant/"+id
 		        })
 		        .then(function(result) {
 		            SuivantLoad.list = result.items
-		        	console.log("got:",result.items)
 		        	m.redraw(true) // force
 		        })
 		    }
 		}
 	
+	//Appel à l'api permettant de charger les 100 pages précédente de la pagination 
 	var PrecedentLoad = {
 		    list: [],
 		    loadList: function(id) {
 		        return m.request({
 		            method: "POST",
-		            url: "http://localhost:8888/_ah/api/monApi/v1/precedent/"+id
+		            url: "https://claudproject.appspot.com/_ah/api/monApi/v1/precedent/"+id
 		        })
 		        .then(function(result) {
 		            PrecedentLoad.list = result.items
 		            PrecedentLoad.list.sort(compare)
-		            console.log("test:",PrecedentLoad.list )
-		        	//console.log("got:",result.items)
 		        	m.redraw(true) // force
 		        })
 		    }
 		}
 
+	//Appel à l'api permettant de signer une pétition
 	var Signature = {
 		    current: {},
 		    save: function() {
-		    	console.log("saving...",Signature.current)
 		        return m.request({
 		            method: "POST",
-		            url: "http://localhost:8888/_ah/api/monApi/v1/signature/"+Signature.current.titre+"/"+sessionStorage.getItem('id')
+		            url: "https://claudproject.appspot.com/_ah/api/monApi/v1/signature/"+Signature.current.titre+"/"+sessionStorage.getItem('id')+"/"+sessionStorage.getItem('email')
 		        })
 		    }
 		}
 	
+	//Appel à l'api permettant d'ajouter une pétition
 	var NewPetition = {
 		    current: {},
 		    save: function() {
-		    	console.log("saving...",NewPetition.current)
 		        return m.request({
 		            method: "POST",
-		            url: "http://localhost:8888/_ah/api/monApi/v1/add/"+NewPetition.current.titre+"/"+NewPetition.current.description+"/"+sessionStorage.getItem('email')
+		            url: "https://claudproject.appspot.com/_ah/api/monApi/v1/add/"+NewPetition.current.titre+"/"+NewPetition.current.description+"/"+sessionStorage.getItem('email')+"/112717156577953443791"
 		        })
 		    }
 		}
 	
+	//Appel à l'api permettant de récupérer toutes les pétitions signées par l'utilisateur connecté
 	var MesPetitionsLoad = {
 		    list: [],
 		    loadList: function() {
 		        return m.request({
 		            method: "GET",
-		            url: "http://localhost:8888/_ah/api/monApi/v1/mesPetitions/"+sessionStorage.getItem('id')
+		            url: "https://claudproject.appspot.com/_ah/api/monApi/v1/mesPetitions/"+sessionStorage.getItem('id')+"/"+sessionStorage.getItem('email')
 		        })
 		        .then(function(result) {
 		            MesPetitionsLoad.list = result.items
-		        	console.log("got:",result.items)
 		        	m.redraw(true) // force
 		        })
 		    }
 		}
 	
+	//Appel à l'api permettant de récupérer le top 100
 	var TopLoad = {
 		    list: [],
 		    loadList: function() {
 		        return m.request({
 		            method: "GET",
-		            url: "http://localhost:8888/_ah/api/monApi/v1/top"
+		            url: "https://claudproject.appspot.com/_ah/api/monApi/v1/top"
 		        })
 		        .then(function(result) {
 		            TopLoad.list = result.items
-		        	console.log("got:",result.items)
 		        	m.redraw(true) // force
 		        })
 		    }
 		}
 	
+	//Vue des 100 première pétitions
 	var AllView = {
 			oninit: AllLoad.loadList,
 			onupdate: function() {
-				if(AllLoad.list.length < 2){
+				if(AllLoad.list.length < 3){
 		            document.getElementById("suivantAll").style.display ="none"
 		        }else{
 		        	document.getElementById("suivantAll").style.display = "block"
+		        	document.getElementById("suivantAll").style.margin = "auto"
 		        }
 				if(sessionStorage.getItem('token')){
 					for (var i = 0; i < AllLoad.list.length; i++) {
@@ -224,7 +210,7 @@
 		        return m("div", [m(".petition-list", AllLoad.list.map(function(item) {
 		            return m("div",[
 				            m(".petition-list-item", [
-				            	m("a", {class:"petition", href: "/#!/accueil"}, [
+				            	m("div", {class:"petition"}, [
 				            		m("div",item.properties.titre),
 				            		m("div",item.properties.description),
 				            		m("div",item.properties.utilisateur),
@@ -232,7 +218,6 @@
 				            		m("button", {id:"sign"+AllLoad.list.indexOf(item),
 				            			onclick: function(e){
 				            				e.preventDefault()
-				            				console.log
 						                    Signature.current.titre=item.properties.titre
 						                    Signature.save()
 				            			},
@@ -247,23 +232,26 @@
 	        			onclick: function(){
 	        				m.route.set("/suivant/:id", {id: AllLoad.list[AllLoad.list.length-1].properties.titre})
 		            		page = page + 1
-		            		console.log(page)
-		            		console.log(sessionStorage.getItem('id'))}
+		            		}
 	        			},"Suivant"),
 		        ])
 		    },
 			
 	}
 	
+	//Vue des 100 pétitions suivantes
 	var SuivantView = {
 			oninit: function(vnode) {
 				SuivantLoad.loadList(vnode.attrs.data)
 		    },
 			onupdate: function() {
-				if(SuivantLoad.list.length < 2){
+				if(SuivantLoad.list.length < 3){
 		            document.getElementById("suivant").style.display ="none"
+		            document.getElementById("precedentSuiv").style.display = "block"
+				   	document.getElementById("precedentSuiv").style.margin = "auto"
 		        }else{
-		        	document.getElementById("suivant").style.display = "block"
+		        	document.getElementById("suivant").style.display = "inline-block"
+		        	document.getElementById("precedentSuiv").style.display = "inline-block"
 		        }
 				if(sessionStorage.getItem('token')){
 					for (var i = 0; i < SuivantLoad.list.length; i++) {
@@ -280,7 +268,7 @@
 		        return m("div", [m(".petition-list", SuivantLoad.list.map(function(item) {
 			            return m("div", [
 				            m(".petition-list-item", [
-				            	m("a", {class:"petition", href: "/#!/accueil"}, [
+				            	m("div", {class:"petition"}, [
 				            		m("div",item.properties.titre),
 				            		m("div",item.properties.description),
 				            		m("div",item.properties.utilisateur),
@@ -299,16 +287,14 @@
 				            
 			            ])
 			        })),
-			        m("button",{
+			        m("button",{id:"precedentSuiv",
 	        			onclick: function(){
-	        				//console.log(SuivantLoad.list[1].properties.titre)
 	        				m.route.set("/precedent/:id", {id: SuivantLoad.list[0].properties.titre})
 	            			PrecedentLoad.loadList(SuivantLoad.list[0].properties.titre)
 	            			page = page - 1}
 	        			},"Precedent"),
 			        m("button",{id:"suivant",
 	        			onclick: function(){
-	        				//console.log(SuivantLoad.list[1].properties.titre)
 	        				m.route.set("/suivant/:id", {id: SuivantLoad.list[SuivantLoad.list.length-1].properties.titre})
 	            			SuivantLoad.loadList(SuivantLoad.list[SuivantLoad.list.length-1].properties.titre)
 	            			page = page + 1}
@@ -318,6 +304,7 @@
 			
 	}
 	
+	//Vue des 100 pétitions suivantes
 	var PrecedentView = {
 			oninit: function(vnode) {
 				PrecedentLoad.loadList(vnode.attrs.data)
@@ -325,8 +312,11 @@
 			onupdate: function() {
 				if(page == 1){
 		            document.getElementById("precedent").style.display ="none"
+		            document.getElementById("suivantPrec").style.display = "block"
+		            document.getElementById("suivantPrec").style.margin = "auto"
 		        }else{
-		        	document.getElementById("precedent").style.display = "block"
+		        	document.getElementById("precedent").style.display = "inline-block"
+		        	document.getElementById("suivantPrec").style.display = "inline-block"
 		        }
 				if(sessionStorage.getItem('token')){
 					for (var i = 0; i < PrecedentLoad.list.length; i++) {
@@ -343,7 +333,7 @@
 		        return m("div", [m(".petition-list", PrecedentLoad.list.map(function(item) {
 			            return m("div", [
 				            m(".petition-list-item", [
-				            	m("a", {class:"petition", href: "/#!/accueil"}, [
+				            	m("div", {class:"petition"}, [
 				            		m("div",item.properties.titre),
 				            		m("div",item.properties.description),
 				            		m("div",item.properties.utilisateur),
@@ -364,15 +354,12 @@
 			        })),
 			        m("button",{id:"precedent",
 	        			onclick: function(){
-	        				console.log(PrecedentLoad.list)
 	        				m.route.set("/precedent/:id", {id: PrecedentLoad.list[0].properties.titre})
 	            			PrecedentLoad.loadList(PrecedentLoad.list[0].properties.titre)
 	            			page = page - 1}
 	        			},"Precedent"),
-			        m("button",{
+			        m("button",{id:"suivantPrec",
 	        			onclick: function(){
-	        				console.log(PrecedentLoad.list)
-	        				//console.log(SuivantLoad.list[1].properties.titre)
 	        				m.route.set("/suivant/:id", {id: PrecedentLoad.list[PrecedentLoad.list.length-1].properties.titre})
 	            			SuivantLoad.loadList(PrecedentLoad.list[PrecedentLoad.list.length-1].properties.titre)
 	            			page = page + 1}
@@ -382,6 +369,7 @@
 			
 	}
 
+	//Vue de l'ajout d'une pétition
 	var NewPetitionView = {
 		    view: function() {
 		        return m("main", [
@@ -393,7 +381,7 @@
 				                onsubmit: function(e) {
 				                    e.preventDefault()
 				                    NewPetition.save()
-				                    m.route.set("/all")
+				                    m.route.set("/accueil")
 				                }
 				            }, [
 						    	m("div", {class:"form-group"}, [
@@ -417,12 +405,13 @@
 		    }
 		}
 	
+	//Vue des pétitions signées par l'utilisateur courant
 	var MesPetitionsView = {
 			oninit: MesPetitionsLoad.loadList,
 		    view: function() {
 		        return m(".petition-list", MesPetitionsLoad.list.map(function(item) {
 		            return m(".petition-list-item", [
-		            	m("a", {class:"petition", href: "/accueil.html"}, [
+		            	m("div", {class:"petition"}, [
 		            		m("div",item.properties.titre),
 		            		m("div",item.properties.description),
 		            		m("div",item.properties.cptSignatures),
@@ -434,6 +423,7 @@
 			
 	}
 	
+	//Vue du top 100
 	var TopView = {
 			oninit: TopLoad.loadList,
 			onupdate: function() {
@@ -451,7 +441,7 @@
 		    view: function() {
 		        return m(".petition-list", TopLoad.list.map(function(item) {
 		            return m(".petition-list-item", [
-		            	m("a", {class:"petition", href: "/accueil.html"}, [
+		            	m("div", {class:"petition"}, [
 		            		m("div",item.properties.titre),
 		            		m("div",item.properties.description),
 		            		m("div",item.properties.utilisateur.email),
@@ -480,7 +470,7 @@
 		    }
 		}
 	
-	var All = {
+	var Accueil = {
 		    view: function() {
 		        return m("main", [
 		        	m(NavBar),
@@ -516,22 +506,8 @@
 		    }
 		}
 	
-	var Accueil = {
-	    	oninit: User.save,
-		    view: function() {
-		        return m("main", [
-		        	m(NavBar),
-			        m("div", {id : "general"},[
-			        	m("div", {id:"txt-accueil" }, 
-			        			"Afin de profiter de toutes les fonctionnalités du site, connectez-vous !")
-			        	]),
-			    ])
-		    }
-		}
-	
 	m.route(root, "/accueil", {
 	    "/accueil": Accueil,
-	    "/all": All,
 	    "/newPetition": NewPetitionView,
 	    "/mesPetitions": MesPetitions,
 	    "/top": Top,

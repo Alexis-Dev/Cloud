@@ -19,46 +19,46 @@ import java.util.List;
 version = "v1")
 public class PetitionEndpoint {
 
-	@ApiMethod(name = "getUser",
-			path = "getUser")
-	public User getUser() {
-
-		  	UserService userService = UserServiceFactory.getUserService();  
-		  	User user = userService.getCurrentUser();
-		  	System.out.println(user);
-			
-		  	if(user != null) {
-		  		return  user;
-		  	}else {
-		  		return null;
-		  	}
-			
-	}
-	
+	//Méthode qui récupère toutes les pétitions signées par l'utilisateur connecté
 	@ApiMethod(name = "listMyPetitions",
-			path = "mesPetitions/{userId}")
-	public List<Entity> listMyPetitionEntity(@Named("userId") String userId) throws EntityNotFoundException {
+			path = "mesPetitions/{userId}/{email}")
+	public List<Entity> listMyPetitionEntity(@Named("userId") String userId,@Named("email") String email) throws EntityNotFoundException {
 		  	
 			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+			List<Entity> result = new ArrayList<Entity>();
 			
-			Key cleUser = KeyFactory.createKey("Utilisateur", userId);
+			Query qUser = new Query("Utilisateur").setFilter(new Query.FilterPredicate("email", Query.FilterOperator.EQUAL, email));
 			
-			Entity e = datastore.get(cleUser);
-			List<Entity> result;
-			ArrayList<String> listePetitions = (ArrayList<String>)e.getProperty("petitionsSignees");
-			if(listePetitions != null) {
+			PreparedQuery pqUser = datastore.prepare(qUser);
+			List<Entity> resultUser = pqUser.asList(FetchOptions.Builder.withLimit(100));
+			
+			Entity user;
+			ArrayList<String> listePetitions;
+			
+			//On vérifie si l'utilisateur est déjà stocké dans le datastore
+			if(resultUser.isEmpty()) {
+				user = new Entity("Utilisateur", userId);
+			  	user.setProperty("email", email);
+			  	listePetitions = new ArrayList<String>();
+				datastore.put(user);
+			}else {
+				user = resultUser.get(0);
+				listePetitions = (ArrayList<String>)user.getProperty("petitionsSignees");
+			}
+			
+			//Verification afin de savoir si la liste des pétitions est non vide 
+			if(!listePetitions.isEmpty()) {
 				Query q = new Query("Petition").setFilter(new Query.FilterPredicate("titre", Query.FilterOperator.IN, listePetitions));
 
 				datastore = DatastoreServiceFactory.getDatastoreService();
 				PreparedQuery pq = datastore.prepare(q);
 				result = pq.asList(FetchOptions.Builder.withDefaults());
-			}else {
-				result = new ArrayList<Entity>();
 			}
 			
 			return result;
 	}
 	
+	//Permet d'obtenir le top 100 des petitions en fonction du nombre de signatures
 	@ApiMethod(name = "listTop",
 			path = "top")
 	public List<Entity> listTopPetitionEntity() {
@@ -70,6 +70,7 @@ public class PetitionEndpoint {
 			return result;
 	}
 	
+	//Permet d'obtenir les 100 premières pétitions
 	@ApiMethod(name = "listAll",
 			path = "all")
 	public List<Entity> listAllPetitionEntity() {
@@ -77,10 +78,11 @@ public class PetitionEndpoint {
 
 			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 			PreparedQuery pq = datastore.prepare(q);
-			List<Entity> result = pq.asList(FetchOptions.Builder.withLimit(2));
+			List<Entity> result = pq.asList(FetchOptions.Builder.withLimit(3));
 			return result;
 	}
 	
+	//Pagination => Permet d'obtenir les 100 petitions suivantes
 	@ApiMethod(name = "suivant",
 			path = "suivant/{id}")
 	public List<Entity> paginationSuivant(@Named("id") String id) {
@@ -91,11 +93,11 @@ public class PetitionEndpoint {
 
 			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 			PreparedQuery pq = datastore.prepare(q);
-			List<Entity> result = pq.asList(FetchOptions.Builder.withLimit(2));
-			//System.out.println(result);
+			List<Entity> result = pq.asList(FetchOptions.Builder.withLimit(3));
 			return result;
 	}
 	
+	//Pagination => Permet d'obtenir les 100 petitions précédentes
 	@ApiMethod(name = "precedent",
 			path = "precedent/{id}")
 	public List<Entity> paginationPrecedent(@Named("id") String id) {
@@ -106,85 +108,99 @@ public class PetitionEndpoint {
 
 			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 			PreparedQuery pq = datastore.prepare(q);
-			List<Entity> result = pq.asList(FetchOptions.Builder.withLimit(2));
-			//System.out.println(result);
+			List<Entity> result = pq.asList(FetchOptions.Builder.withLimit(3));
 			return result;
 	}
 	
+	//Permet d'ajouter une pétition
 	@ApiMethod(name = "addPetition",
-			path = "add/{titre}/{description}/{email}")
-	public Entity addPetition(@Named("titre") String titre, @Named("description") String description, @Named("email") String email) {
-
+			path = "add/{titre}/{description}/{email}/{userId}")
+	public Entity addPetition(@Named("titre") String titre, @Named("description") String description, @Named("email") String email, @Named("userId") String userId) {
+			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+			Query qUser = new Query("Utilisateur").setFilter(new Query.FilterPredicate("email", Query.FilterOperator.EQUAL, email));
+			
+			PreparedQuery pqUser = datastore.prepare(qUser);
+			List<Entity> resultUser = pqUser.asList(FetchOptions.Builder.withDefaults());
+			
+			Entity user;
+			ArrayList<String> listePetitions;
+			if(resultUser.isEmpty()) {
+				user = new Entity("Utilisateur", userId);
+			  	user.setProperty("email", email);
+			  	listePetitions = new ArrayList<String>();
+				//datastore.put(user);
+			}else {
+				user = resultUser.get(0);
+				listePetitions = (ArrayList<String>)user.getProperty("petitionsSignees");
+				if(listePetitions == null) {
+					listePetitions = new ArrayList<String>();
+				}
+			}
+			
 			Entity e = new Entity("Petition", titre);
 			e.setProperty("titre", titre);
 			e.setProperty("description", description);
 			e.setProperty("utilisateur", email);
-			e.setProperty("cptSignatures", 0);
-
-			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-			datastore.put(e);
+			e.setProperty("cptSignatures", 1);
 			
+			listePetitions.add(titre);
+			user.setProperty("petitionsSignees", listePetitions);
+			
+			datastore.put(e);
+			datastore.put(user);
 			return  e;
 	}
 	
+	//Permet de signer une pétition
 	@ApiMethod(name = "Signature",
-			path = "signature/{id}/{userId}")
-	public Entity Signature(@Named("id") String id, @Named("userId") String userId) throws EntityNotFoundException {
+			path = "signature/{id}/{userId}/{email}")
+	public Entity Signature(@Named("id") String id, @Named("userId") String userId, @Named("email") String email) throws EntityNotFoundException {
 		  	
-			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 			
-			Key cleUser = KeyFactory.createKey("Utilisateur", userId);
-			Key clePetition = KeyFactory.createKey("Petition", id);
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Query q = new Query("Utilisateur").setFilter(new Query.FilterPredicate("email", Query.FilterOperator.EQUAL, email));
 			
-			ArrayList<String> listePetitions;
-			
-			Entity e = datastore.get(cleUser);
-			Entity petition = datastore.get(clePetition);
-
+		PreparedQuery pq = datastore.prepare(q);
+		List<Entity> result = pq.asList(FetchOptions.Builder.withDefaults());
+		
+		Entity user;
+		
+		ArrayList<String> listePetitions;
+		
+		//On verifie si l'utilisateur est déjà stocké dans le datastore
+		if(result.isEmpty()) {
+			user = new Entity("Utilisateur", userId);
+		  	user.setProperty("email", email);
 		  	listePetitions = new ArrayList<String>();
-			
-		  	if (e.getProperty("petitionsSignees") == null) {
+		}else {
+			user = result.get(0);
+			listePetitions = new ArrayList<String>();
+			if (user.getProperty("petitionsSignees") == null) {
 				listePetitions = new ArrayList<String>();
 			}else {
-				listePetitions = (ArrayList<String>)e.getProperty("petitionsSignees");
-			}				
-			
-		  	if(!listePetitions.contains(id)) {
-		  		long cpt = (long) petition.getProperty("cptSignatures");
-			  	System.out.println(cpt);
-			  	petition.setProperty("cptSignatures", cpt+1);
-			  	System.out.println(petition.getProperty("cptSignatures"));
-			  	
-		  		listePetitions.add(id);
-				e.setProperty("petitionsSignees", listePetitions);
-				
-				datastore.put(petition);
-				datastore.put(e);
-		  	}
-		  				
-			return petition;
-	}
-		
-	@ApiMethod(name = "AddUser",
-			path = "addUser/{userId}/{email}")
-	public Entity addUser(@Named("userId") String userId, @Named("email") String email) {
-  	
-			Query q = new Query("Utilisateur").setFilter(new Query.FilterPredicate("email", Query.FilterOperator.EQUAL, email));
-			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-			PreparedQuery pq = datastore.prepare(q);
-			List<Entity> result = pq.asList(FetchOptions.Builder.withDefaults());
-			
-			Entity e = new Entity("Utilisateur", userId);
-			
-			if(result.isEmpty()) {
-			  	e.setProperty("email", email);
-			  	ArrayList<String> listePetitions = new ArrayList<String>();
-			  	e.setProperty("petitionsSignees", listePetitions);
-				datastore = DatastoreServiceFactory.getDatastoreService();
-				datastore.put(e);
+				listePetitions = (ArrayList<String>)user.getProperty("petitionsSignees");
 			}
+		}
+					
+		Key clePetition = KeyFactory.createKey("Petition", id);
+			
+		Entity petition = datastore.get(clePetition);		
+			
+		if(!listePetitions.contains(id)) {
+		 	long cpt = (long) petition.getProperty("cptSignatures");
+		  	System.out.println(petition.getProperty("cptSignatures"));
+		  	cpt++;
+			  	
+			listePetitions.add(id);
+			System.out.println(listePetitions);
+			user.setProperty("petitionsSignees", listePetitions);
+			petition.setProperty("cptSignatures", cpt);
 				
-			return  e;
+			datastore.put(petition);
+			datastore.put(user);
+	  	}
+		  				
+		return petition;
 	}
 
 }
