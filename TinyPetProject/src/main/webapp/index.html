@@ -415,7 +415,7 @@
 		            		m("div",item.properties.titre),
 		            		m("div",item.properties.description),
 		            		m("div",item.properties.cptSignatures),
-		            		m("div",item.properties.utilisateur.email)
+		            		m("div",item.properties.utilisateur)
 		            	])
 		            ])
 		        }))
@@ -444,7 +444,7 @@
 		            	m("div", {class:"petition"}, [
 		            		m("div",item.properties.titre),
 		            		m("div",item.properties.description),
-		            		m("div",item.properties.utilisateur.email),
+		            		m("div",item.properties.utilisateur),
 		            		m("div",item.properties.cptSignatures),
 		            		m("button", {id:"signTop"+TopLoad.list.indexOf(item),
 		            			onclick: function(e){
